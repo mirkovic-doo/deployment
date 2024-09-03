@@ -1,0 +1,61 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: client-service
+  namespace: devops
+spec:
+  selector:
+    app: client
+  ports:
+  - protocol: TCP
+    port: 3009
+    targetPort: 3009
+  type: NodePort
+
+---
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: client
+  namespace: devops
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: client
+  template:
+    metadata:
+      labels:
+        app: client
+    spec:
+      containers:
+      - name: client
+        image: bukiteasy/client:v0.0.1
+        ports:
+        - containerPort: 3009
+        env:
+        - name: NODE_ENV
+          value: "development"
+        - name: PUBLIC_USER_SERVICE_BASE_URL
+          value: "/user-service"
+        - name: PUBLIC_NOTIFICATION_SERVICE_BASE_URL
+          value: "/notification-service"
+        - name: PUBLIC_ACCOMMODATION_SERVICE_BASE_URL
+          value: "/accommodation-service"
+        - name: PUBLIC_REVIEW_SERVICE_BASE_URL
+          value: "/review-service"
+        - name: PUBLIC_FIREBASE_API_KEY
+          value: "AIzaSyAcqTxexa9D0ehQwSiUAoFY5jvrlucOb94"
+        - name: PUBLIC_FIREBASE_AUTH_DOMAIN
+          value: "buk-it-easy-dev.firebaseapp.com"
+        - name: PUBLIC_FIREBASE_PROJECT_ID
+          value: "buk-it-easy-dev"
+        - name: PUBLIC_FIREBASE_STORAGE_BUCKET
+          value: "buk-it-easy-dev.appspot.com"
+        - name: PUBLIC_FIREBASE_MESSAGING_SENDER_ID
+          value: "238386706283"
+        - name: PUBLIC_FIREBASE_APP_ID
+          value: "1:238386706283:web:0f36ec71441bf8b746be2e"
+        - name: PUBLIC_FIREBASE_MEASUREMENT_ID
+          value: "G-VP6E1Z1NJN"

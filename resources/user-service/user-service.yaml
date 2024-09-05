@@ -42,6 +42,9 @@ spec:
               subPath: appsettings.Development.json
             - name: secrets-volume
               mountPath: /app/secrets
+            - name: elasticsearch-secrets
+              mountPath: /app/certs/apm-server.crt
+              subPath: apm-server.certificate
       volumes:
         - name: config-volume
           configMap:
@@ -49,3 +52,6 @@ spec:
         - name: secrets-volume
           secret:
             secretName: user-service-secrets
+        - name: elasticsearch-secrets
+          secret:
+            secretName: elasticsearch-secrets

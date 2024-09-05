@@ -31,6 +31,7 @@ spec:
       containers:
       - name: review-service
         image: bukiteasy/review-service:0.0.1
+        imagePullPolicy: Always  # This forces the image to be pulled every time
         ports:
         - containerPort: 8080
         env:
@@ -40,7 +41,13 @@ spec:
             - name: config-volume
               mountPath: /app/appsettings.Development.json
               subPath: appsettings.Development.json
+            - name: elasticsearch-secrets
+              mountPath: /app/certs/apm-server.crt
+              subPath: apm-server.certificate
       volumes:
         - name: config-volume
           configMap:
             name: review-service-config
+        - name: elasticsearch-secrets
+          secret:
+            secretName: elasticsearch-secrets

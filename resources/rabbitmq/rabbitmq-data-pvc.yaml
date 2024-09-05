@@ -9,4 +9,21 @@ spec:
   resources:
     requests:
       storage: 250Mi
-  storageClassName: local-storage
+  storageClassName: devops-rabbitmq
+
+---
+
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: rabbitmq-pv
+  namespace: devops
+spec:
+  capacity:
+    storage: 250Mi
+  accessModes:
+    - ReadWriteOnce
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: devops-rabbitmq
+  hostPath:
+    path: "/mnt/data/rabbitmq" 

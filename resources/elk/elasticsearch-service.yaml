@@ -1,0 +1,112 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: elasticsearch
+  namespace: devops
+spec:
+  selector:
+    app: elasticsearch
+  ports:
+    - name: http
+      protocol: TCP
+      port: 9200
+      targetPort: 9200
+    - name: transport
+      protocol: TCP
+      port: 9300
+      targetPort: 9300
+
+
+---
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: elasticsearch
+  namespace: devops
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: elasticsearch
+  template:
+    metadata:
+      labels:
+        app: elasticsearch
+    spec:
+      containers:
+        - name: elasticsearch
+          image: docker.elastic.co/elasticsearch/elasticsearch:8.15.0
+          resources:
+            requests:
+              memory: "2Gi"
+              cpu: "1"
+            limits:
+              memory: "3Gi"
+              cpu: "2"
+          env:
+            - name: ELASTIC_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: elk-secrets
+                  key: ELASTIC_USERNAME
+            - name: ELASTIC_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: elk-secrets
+                  key: ELASTIC_PASSWORD
+            - name: ELASTIC_CLUSTER_NAME
+              valueFrom:
+                configMapKeyRef:
+                  name: elastic-config
+                  key: ELASTIC_CLUSTER_NAME
+            - name: ELASTIC_NODE_NAME
+              valueFrom:
+                configMapKeyRef:
+                  name: elastic-config
+                  key: ELASTIC_NODE_NAME
+            - name: ELASTIC_INIT_MASTER_NODE
+              valueFrom:
+                configMapKeyRef:
+                  name: elastic-config
+                  key: ELASTIC_INIT_MASTER_NODE
+            - name: ELASTIC_DISCOVERY_SEEDS
+              valueFrom:
+                configMapKeyRef:
+                  name: elastic-config
+                  key: ELASTIC_DISCOVERY_SEEDS
+            - name: ELASTICSEARCH_PORT
+              valueFrom:
+                configMapKeyRef:
+                  name: elastic-config
+                  key: ELASTICSEARCH_PORT
+            - name: ES_JAVA_OPTS
+              value: "-Xmx2048m -Xms2048m -Des.enforce.bootstrap.checks=true -Dlog4j2.formatMsgNoLookups=true"
+            - name: bootstrap.memory_lock
+              value: "true"
+          volumeMounts:
+            - name: elasticsearch-config
+              mountPath: /usr/share/elasticsearch/config/elasticsearch.yml
+              subPath: elasticsearch.yml
+            - name: elasticsearch-secrets
+              mountPath: /usr/share/elasticsearch/config/elasticsearch.keystore
+              subPath: elasticsearch.keystore
+            - name: elasticsearch-secrets
+              mountPath: /usr/share/elasticsearch/config/service_tokens
+              subPath: elasticsearch.service_tokens
+            - name: elasticsearch-secrets
+              mountPath: /usr/share/elasticsearch/config/certs/ca.crt
+              subPath: elastic.ca
+            - name: elasticsearch-secrets
+              mountPath: /usr/share/elasticsearch/config/certs/elasticsearch.crt
+              subPath: elasticsearch.certificate
+            - name: elasticsearch-secrets
+              mountPath: /usr/share/elasticsearch/config/certs/elasticsearch.key
+              subPath: elasticsearch.key
+      volumes:
+        - name: elasticsearch-config
+          configMap:
+            name: elastic-config
+        - name: elasticsearch-secrets
+          secret:
+            secretName: elasticsearch-secrets

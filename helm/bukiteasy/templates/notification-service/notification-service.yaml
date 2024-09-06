@@ -1,0 +1,54 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Values.notification.service.name | default "notification-service" }}
+  namespace: {{ .Values.global.namespace | default "devops" }}
+spec:
+  ports:
+  - port: {{ .Values.notification.service.port | default 8080 }}
+    targetPort: {{ .Values.notification.service.port | default 8080 }}
+  selector:
+    app: {{ .Values.notification.deployment.name | default "notification" }}
+  type: ClusterIP
+
+
+---
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Values.notification.deployment.name | default "notification" }}
+  namespace: {{ .Values.global.namespace | default "devops" }}
+spec:
+  replicas: {{ .Values.notification.deployment.replicas | default 1 }}
+  selector:
+    matchLabels:
+      app: {{ .Values.notification.deployment.name | default "notification" }}
+  template:
+    metadata:
+      labels:
+        app: {{ .Values.notification.deployment.name | default "notification" }}
+    spec:
+      containers:
+      - name: notification-service
+        image: bukiteasy/notification-service:0.0.1
+        imagePullPolicy: Always
+        ports:
+        - containerPort: {{ .Values.notification.deployment.containerPort | default 8080 }}
+        env:
+        - name: ASPNETCORE_ENVIRONMENT
+          value: {{ .Values.global.netEnv | default "Development" }}
+        volumeMounts:
+            - name: config-volume
+              mountPath: /app/appsettings.Development.json
+              subPath: appsettings.Development.json
+            - name: elasticsearch-secrets
+              mountPath: /app/certs/apm-server.crt
+              subPath: apm-server.certificate
+      volumes:
+        - name: config-volume
+          configMap:
+            name: notification-service-config
+        - name: elasticsearch-secrets
+          secret:
+            secretName: elasticsearch-secrets

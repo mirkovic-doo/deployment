@@ -1,0 +1,80 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Values.apm.service.name | default "apm-server" }}
+  namespace: {{ .Values.global.namespace | default "devops" }}
+spec:
+  selector:
+    app: {{ .Values.apm.deployment.name | default "apm-server" }}
+  ports:
+    - protocol: TCP
+      port: {{ .Values.apm.service.port | default 8200 }}
+      targetPort: {{ .Values.apm.service.port | default 8200 }}
+
+---
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Values.apm.deployment.name | default "apm-server" }}
+  namespace: {{ .Values.global.namespace | default "devops" }}
+spec:
+  replicas: {{ .Values.apm.deployment.replicas | default 1 }}
+  selector:
+    matchLabels:
+      app: {{ .Values.apm.deployment.name | default "apm-server" }}
+  template:
+    metadata:
+      labels:
+        app: {{ .Values.apm.deployment.name | default "apm-server" }}
+    spec:
+      containers:
+        - name: apm-server
+          image: docker.elastic.co/apm/apm-server:8.15.0
+          resources:
+            requests:
+              memory: "256Mi"
+              cpu: "250m"
+            limits:
+              memory: "512Mi"
+              cpu: "500m"
+          ports:
+            - containerPort: {{ .Values.apm.deployment.containerPort | default 8200 }}
+          env:
+            - name: ELASTIC_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: elk-secrets
+                  key: ELASTIC_USERNAME
+            - name: ELASTIC_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: elk-secrets
+                  key: ELASTIC_PASSWORD
+            - name: ELASTICSEARCH_HOST_PORT
+              value: "https://elasticsearch:9200"
+            - name: ELASTIC_APM_SECRET_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: elk-secrets
+                  key: ELASTIC_APM_SECRET_TOKEN
+          volumeMounts:
+            - name: apm-config
+              mountPath: /usr/share/apm-server/apm-server.yml
+              subPath: apm-server.yml
+            - name: apm-server-secrets
+              mountPath: /certs/ca.crt
+              subPath: elastic.ca
+            - name: apm-server-secrets
+              mountPath: /certs/apm-server.crt
+              subPath: apm-server.certificate
+            - name: apm-server-secrets
+              mountPath: /certs/apm-server.key
+              subPath: apm-server.key
+      volumes:
+        - name: apm-config
+          configMap:
+            name: apm-server-config
+        - name: apm-server-secrets
+          secret:
+            secretName: elasticsearch-secrets

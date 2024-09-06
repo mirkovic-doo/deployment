@@ -1,0 +1,44 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: elk-config
+  namespace: {{ .Values.global.namespace | default "devops" }}
+data:
+
+  main.conf: |
+    input {
+        beats {
+            port => 5044
+        }
+    }
+
+    filter {
+    }
+
+    output {
+        elasticsearch {
+            hosts => "${ELASTICSEARCH_HOST_PORT}"
+            user => "${ELASTIC_USERNAME}"
+            password => "${ELASTIC_PASSWORD}"
+            ssl => true
+            ssl_certificate_verification => false
+            cacert => "/certs/ca.crt"
+        }
+    }
+
+  # Logstash pipelines.yml configuration
+  pipelines.yml: |
+    - pipeline.id: main
+      path.config: "/usr/share/logstash/pipeline/main.conf"
+      queue.type: memory
+
+  # Logstash logstash.yml configuration
+  logstash.yml: |
+    http.host: "0.0.0.0"
+
+    ## X-Pack security credentials
+    xpack.monitoring.elasticsearch.hosts: ${ELASTICSEARCH_HOST_PORT}
+    xpack.monitoring.enabled: true
+    xpack.monitoring.elasticsearch.username: ${ELASTIC_USERNAME}
+    xpack.monitoring.elasticsearch.password: ${ELASTIC_PASSWORD}
+    xpack.monitoring.elasticsearch.ssl.certificate_authority: /certs/ca.crt

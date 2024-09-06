@@ -1,14 +1,14 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: review-service
-  namespace: devops
+  name: {{ .Values.review.service.name | default "review-service" }}
+  namespace: {{ .Values.global.namespace | default "devops" }}
 spec:
   ports:
-  - port: 8080
-    targetPort: 8080
+  - port: {{ .Values.review.service.port | default 8080 }}
+    targetPort: {{ .Values.review.service.port | default 8080 }}
   selector:
-    app: review
+    app: {{ .Values.review.deployment.name | default "review" }}
   type: ClusterIP
 
 ---
@@ -16,27 +16,27 @@ spec:
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: review
-  namespace: devops
+  name: {{ .Values.review.deployment.name | default "review" }}
+  namespace: {{ .Values.global.namespace | default "devops" }}
 spec:
-  replicas: 1
+  replicas: {{ .Values.review.deployment.replicas | default 1 }}
   selector:
     matchLabels:
-      app: review
+      app: {{ .Values.review.deployment.name | default "review" }}
   template:
     metadata:
       labels:
-        app: review
+        app: {{ .Values.review.deployment.name | default "review" }}
     spec:
       containers:
       - name: review-service
         image: bukiteasy/review-service:0.0.1
-        imagePullPolicy: Always  # This forces the image to be pulled every time
+        imagePullPolicy: Always
         ports:
-        - containerPort: 8080
+        - containerPort: {{ .Values.review.deployment.containerPort | default 8080 }}
         env:
         - name: ASPNETCORE_ENVIRONMENT
-          value: "Development"
+          value: {{ .Values.global.netEnv | default "Development" }}
         volumeMounts:
             - name: config-volume
               mountPath: /app/appsettings.Development.json

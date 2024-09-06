@@ -9,4 +9,21 @@ spec:
   resources:
     requests:
       storage: 500Mi
-  storageClassName: local-storage
+  storageClassName: devops-postgres
+
+---
+
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: postgres-pv
+  namespace: devops
+spec:
+  capacity:
+    storage: 500Mi
+  accessModes:
+    - ReadWriteOnce
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: devops-postgres
+  hostPath:
+    path: "/mnt/data/postgres" 

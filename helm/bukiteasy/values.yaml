@@ -1,0 +1,128 @@
+global:
+  namespace: devops
+  netEnv: Development
+  nodeEnv: development
+  host: localhost
+
+accommodation:
+  service:
+    name: accommodation-service
+    port: 8080
+  deployment:
+    name: accommodation
+    containerPort: 8080
+    replicas: 1
+
+client:
+  service:
+    name: client-service
+    port: 3009
+  deployment:
+    name: client
+    containerPort: 3009
+    replicas: 1
+
+notification:
+  service:
+    name: notification-service
+    port: 8080
+  deployment:
+    name: notification
+    containerPort: 8080
+    replicas: 1
+
+review:
+  service:
+    name: review-service
+    port: 8080
+  deployment:
+    name: review
+    containerPort: 8080
+    replicas: 1
+
+user:
+  service:
+    name: user-service
+    port: 8080
+  deployment:
+    name: user
+    containerPort: 8080
+    replicas: 1
+
+postgres:
+  service:
+    name: postgres
+    port: 5432
+  deployment:
+    name: postgres
+    containerPort: 5432
+    replicas: 1
+  pvc:
+    capacity: "500Mi"
+
+rabbitmq:
+  service:
+    name: rabbitmq
+    amqp:
+      port: 5672
+    management:
+      port: 15672
+  deployment:
+    name: rabbitmq
+    amqp:
+      containerPort: 5672
+    management:
+      containerPort: 15672
+    replicas: 1
+  pvc:
+    capacity: "250Mi"
+
+apm:
+  service:
+    name: apm-server
+    port: 8200
+  deployment:
+    name: apm-server
+    containerPort: 8200
+    replicas: 1
+
+elasticsearch:
+  service:
+    name: elasticsearch
+    port:
+      http: 9200
+      transport: 9300
+  deployment:
+    name: elasticsearch
+    replicas: 1
+  pvc:
+    capacity: "250Mi"
+
+filebeat:
+  service:
+    name: filebeat
+  deployment:
+    name: filebeat
+    replicas: 1
+
+kibana:
+  service:
+    name: kibana
+    port: 5601
+  deployment:
+    name: kibana
+    containerPort: 5601
+    replicas: 1
+
+logstash:
+  service:
+    name: logstash
+    port:
+      beats: 5044
+      http: 9600
+  deployment:
+    name: logstash
+    containerPort:
+      beats: 5044
+      http: 9600
+    replicas: 1

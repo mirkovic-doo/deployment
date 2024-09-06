@@ -1,15 +1,15 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: client-service
+  name: {{ .Values.client.service.name | default "client-service" }}
   namespace: devops
 spec:
   selector:
-    app: client
+    app: {{ .Values.client.deployment.name | default "client" }}
   ports:
   - protocol: TCP
-    port: 3009
-    targetPort: 3009
+    port: {{ .Values.client.service.port | default 3009 }}
+    targetPort: {{ .Values.client.service.port | default 3009 }}
   type: NodePort
 
 ---
@@ -17,27 +17,27 @@ spec:
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: client
-  namespace: devops
+  name: {{ .Values.client.deployment.name | default "client" }}
+  namespace: {{ .Values.global.namespace | default "devops" }}
 spec:
-  replicas: 1
+  replicas: {{ .Values.client.deployment.replicas | default 1 }}
   selector:
     matchLabels:
-      app: client
+      app: {{ .Values.client.deployment.name | default "client" }}
   template:
     metadata:
       labels:
-        app: client
+        app: {{ .Values.client.deployment.name | default "client" }}
     spec:
       containers:
-      - name: client
+      - name: {{ .Values.client.deployment.name | default "client" }}
         image: bukiteasy/client:v0.0.1
         imagePullPolicy: Always
         ports:
-        - containerPort: 3009
+        - containerPort: {{ .Values.client.deployment.containerPort | default 3009 }}
         env:
         - name: NODE_ENV
-          value: "development"
+          value: {{ .Values.global.nodeEnv | default "development" }}
         - name: PUBLIC_USER_SERVICE_BASE_URL
           value: "/user-service"
         - name: PUBLIC_NOTIFICATION_SERVICE_BASE_URL

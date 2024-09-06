@@ -1,0 +1,53 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: ingress
+  namespace: {{ .Values.global.namespace | default "devops" }}
+  annotations:
+    nginx.ingress.kubernetes.io/use-regex: "true"
+    nginx.ingress.kubernetes.io/configuration-snippet: |
+      rewrite ^/user-service(/|$)(.*) /$2 break;
+      rewrite ^/accommodation-service(/|$)(.*) /$2 break;
+      rewrite ^/notification-service(/|$)(.*) /$2 break;
+      rewrite ^/review-service(/|$)(.*) /$2 break;
+spec:
+  ingressClassName: nginx
+  rules:
+  - host: {{ .Values.global.host | default "localhost" }}
+    http:
+      paths:
+      - path: /user-service
+        pathType: Prefix
+        backend:
+          service:
+            name: {{ .Values.user.service.name | default "user-service" }}
+            port:
+              number: {{ .Values.user.service.port | default 8080 }}
+      - path: /accommodation-service
+        pathType: Prefix
+        backend:
+          service:
+            name: {{ .Values.accommodation.service.name | default "accommodation-service" }}
+            port:
+              number: {{ .Values.accommodation.service.port | default 8080 }}
+      - path: /notification-service
+        pathType: Prefix
+        backend:
+          service:
+            name: {{ .Values.notification.service.name | default "notification-service" }}
+            port:
+              number: {{ .Values.notification.service.port | default 8080 }}
+      - path: /review-service
+        pathType: Prefix
+        backend:
+          service:
+            name: {{ .Values.review.service.name | default "review-service" }}
+            port:
+              number: {{ .Values.review.service.port | default 8080 }}
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: {{ .Values.client.service.name | default "client-service" }}
+            port:
+              number: {{ .Values.client.service.port | default 8080 }}

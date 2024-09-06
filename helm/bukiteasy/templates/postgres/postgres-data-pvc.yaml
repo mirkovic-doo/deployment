@@ -1,0 +1,29 @@
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: postgres-pv
+  namespace: {{ .Values.global.namespace | default "devops" }}
+spec:
+  capacity:
+    storage: {{ .Values.postgres.pvc.capacity | default "500Mi" }}
+  accessModes:
+    - ReadWriteOnce
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: devops-postgres
+  hostPath:
+    path: "/mnt/data/postgres" 
+
+---
+
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: postgres-data
+  namespace: {{ .Values.global.namespace | default "devops" }}
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: {{ .Values.postgres.pvc.capacity | default "500Mi" }}
+  storageClassName: devops-postgres

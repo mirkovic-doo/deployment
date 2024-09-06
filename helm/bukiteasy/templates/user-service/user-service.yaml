@@ -1,15 +1,15 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: user-service
-  namespace: devops
+  name: {{ .Values.user.service.name | default "user-service" }}
+  namespace: {{ .Values.global.namespace | default "devops" }}
 spec:
   selector:
-    app: user
+    app: {{ .Values.user.deployment.name | default "user" }}
   ports:
   - protocol: TCP
-    port: 8080
-    targetPort: 8080
+    port: {{ .Values.user.service.port | default 8080 }}
+    targetPort: {{ .Values.user.service.port | default 8080 }}
   type: ClusterIP
 
 ---
@@ -17,25 +17,26 @@ spec:
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: user
+  name: {{ .Values.user.deployment.name | default "user" }}
+  namespace: {{ .Values.global.namespace | default "devops" }}
 spec:
-  replicas: 1
+  replicas: {{ .Values.user.deployment.replicas | default 1 }}
   selector:
     matchLabels:
-      app: user
+      app: {{ .Values.user.deployment.name | default "user" }}
   template:
     metadata:
       labels:
-        app: user
+        app: {{ .Values.user.deployment.name | default "user" }}
     spec:
       containers:
         - name: user-service
           image: bukiteasy/user-service:0.0.1
           ports:
-            - containerPort: 8080
+            - containerPort: {{ .Values.user.deployment.containerPort | default 8080 }}
           env:
             - name: ASPNETCORE_ENVIRONMENT
-              value: Development
+              value: {{ .Values.global.netEnv | default "Development" }}
           volumeMounts:
             - name: config-volume
               mountPath: /app/appsettings.Development.json

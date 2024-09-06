@@ -1,14 +1,14 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: accommodation-service
-  namespace: devops
+  name: {{ .Values.accommodation.service.name | default "accommodation-service" }}
+  namespace: {{ .Values.global.namespace | default "devops" }}
 spec:
   ports:
-  - port: 8080
-    targetPort: 8080
+  - port: {{ .Values.accommodation.service.port | default 8080 }}
+    targetPort: {{ .Values.accommodation.service.port | default 8080 }}
   selector:
-    app: accommodation
+    app: {{ .Values.accommodation.deployment.name | default "accommodation" }}
   type: ClusterIP
 
 
@@ -17,27 +17,27 @@ spec:
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: accommodation
-  namespace: devops
+  name: {{ .Values.accommodation.deployment.name | default "accommodation" }}
+  namespace: {{ .Values.global.namespace | default "devops" }}
 spec:
-  replicas: 1
+  replicas: {{ .Values.accommodation.deployment.replicas | default 1 }}
   selector:
     matchLabels:
-      app: accommodation
+      app: {{ .Values.accommodation.deployment.name | default "accommodation" }}
   template:
     metadata:
       labels:
-        app: accommodation
+        app: {{ .Values.accommodation.deployment.name | default "accommodation" }}
     spec:
       containers:
       - name: accommodation-service
         image: bukiteasy/accommodation-service:0.0.1
         imagePullPolicy: Always
         ports:
-        - containerPort: 8080
+        - containerPort: {{ .Values.accommodation.deployment.containerPort | default 8080 }}
         env:
         - name: ASPNETCORE_ENVIRONMENT
-          value: "Development"
+          value: {{ .Values.global.netEnv | default "Development" }}
         volumeMounts:
             - name: config-volume
               mountPath: /app/appsettings.Development.json

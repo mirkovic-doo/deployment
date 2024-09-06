@@ -1,0 +1,53 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: ingress
+  namespace: devops
+  annotations:
+    nginx.ingress.kubernetes.io/use-regex: "true"
+    nginx.ingress.kubernetes.io/configuration-snippet: |
+      rewrite ^/user-service(/|$)(.*) /$2 break;
+      rewrite ^/accommodation-service(/|$)(.*) /$2 break;
+      rewrite ^/notification-service(/|$)(.*) /$2 break;
+      rewrite ^/review-service(/|$)(.*) /$2 break;
+spec:
+  ingressClassName: nginx
+  rules:
+  - host: localhost
+    http:
+      paths:
+      - path: /user-service
+        pathType: Prefix
+        backend:
+          service:
+            name: user-service
+            port:
+              number: 8080
+      - path: /accommodation-service
+        pathType: Prefix
+        backend:
+          service:
+            name: accommodation-service
+            port:
+              number: 8080
+      - path: /notification-service
+        pathType: Prefix
+        backend:
+          service:
+            name: notification-service
+            port:
+              number: 8080
+      - path: /review-service
+        pathType: Prefix
+        backend:
+          service:
+            name: review-service
+            port:
+              number: 8080
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: client-service
+            port:
+              number: 3009

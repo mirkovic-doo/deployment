@@ -1,0 +1,29 @@
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: rabbitmq-pv
+  namespace: {{ .Values.global.namespace | default "devops" }}
+spec:
+  capacity:
+    storage: {{ .Values.rabbitmq.pvc.capacity | default "250Mi" }}
+  accessModes:
+    - ReadWriteOnce
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: devops-rabbitmq
+  hostPath:
+    path: "/mnt/data/rabbitmq"
+
+---
+
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: rabbitmq-data
+  namespace: {{ .Values.global.namespace | default "devops" }}
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: {{ .Values.rabbitmq.pvc.capacity | default "250Mi" }}
+  storageClassName: devops-rabbitmq

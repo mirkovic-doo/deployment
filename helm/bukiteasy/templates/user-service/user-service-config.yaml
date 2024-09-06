@@ -1,0 +1,59 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: user-service-config
+  namespace: {{ .Values.global.namespace | default "devops" }}
+data:
+  appsettings.Development.json: |
+    {
+      "Logging": {
+        "LogLevel": {
+          "Default": "Information",
+          "Microsoft.AspNetCore": "Warning"
+        }
+      },
+      "FirebaseAuthClientConfig": {
+        "ApiKey": "AIzaSyAcqTxexa9D0ehQwSiUAoFY5jvrlucOb94",
+        "AuthDomain": "buk-it-easy-dev.firebaseapp.com",
+        "ProjectId": "buk-it-easy-dev",
+        "StorageBucket": "buk-it-easy-dev.appspot.com",
+        "MessagingSenderId": "238386706283",
+        "AppId": "1:238386706283:web:0f36ec71441bf8b746be2e"
+      },
+      "DatabaseConfig": {
+        "DatabaseSecureConnectPath": "secrets/secure-connect-user-service-dev.zip",
+        "DefaultKeyspace": "api",
+        "ClientId": "mBQiDIrYPCHNcBSnYXlsqWXc",
+        "ClientSecret": "ZxEsNWlKy0BZr1G2qs7kiEW2f-auv-lcm4mwE.UAaCsSpLcr4_oRRjY-oZSd53hqhvhd5ciaQA2vEWkMb1YjA,EILki8EQ-jHfsGZZzBs-_msBbiwxnlrrwRmfd+6Ead"
+      },
+      "ElasticApm": {
+        "ServiceName": "user-service",
+        "SecretToken": "devops",
+        "ServerUrl": "https://apm-server:8200",
+        "Environment": "development",
+        "ServerCert": "/app/certs/apm-server.crt",
+        "TransactionSampleRate": 1.0,
+        "MetricsInterval": "15s",
+        "UseElasticApmMetrics": true
+      },
+      "FirebaseAdminSdkCredentialsPath": "secrets/buk-it-easy-dev-firebase-adminsdk.json",
+      "Serilog": {
+        "Using": ["Serilog.Sinks.Console"],
+        "MinimumLevel": {
+          "Default": "Information",
+          "Override": {
+            "Microsoft": "Information",
+            "System": "Warning"
+          }
+        },
+        "WriteTo": [
+          {
+            "Name": "Console",
+            "Args": {
+              "outputTemplate": "[{Timestamp:yyyy-MM-dd HH:mm:ss} {Level:u3}] {Message:lj}{NewLine}{Properties}{Exception}"
+            }
+          }
+        ],
+        "Enrich": ["FromLogContext", "WithMachineName", "WithThreadId"]
+      }
+    }

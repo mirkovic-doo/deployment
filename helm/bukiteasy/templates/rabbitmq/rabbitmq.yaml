@@ -1,0 +1,52 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Values.rabbitmq.service.name | default "rabbitmq" }}
+  namespace: {{ .Values.global.namespace | default "devops" }}
+spec:
+  ports:
+  - port: {{ .Values.rabbitmq.service.amqp.port | default 5672 }}
+    targetPort: {{ .Values.rabbitmq.service.amqp.port | default 5672 }}
+    name: amqp
+  - port: {{ .Values.rabbitmq.service.management.port | default 15672 }}
+    targetPort: {{ .Values.rabbitmq.service.management.port | default 15672 }}
+    name: management
+  selector:
+    app: {{ .Values.rabbitmq.deployment.name | default "rabbitmq" }}
+  type: NodePort
+
+---
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Values.rabbitmq.deployment.name | default "rabbitmq" }}
+  namespace: {{ .Values.global.namespace | default "devops" }}
+spec:
+  replicas: {{ .Values.rabbitmq.deployment.replicas | default 1 }}
+  selector:
+    matchLabels:
+      app: {{ .Values.rabbitmq.deployment.name | default "rabbitmq" }}
+  template:
+    metadata:
+      labels:
+        app: {{ .Values.rabbitmq.deployment.name | default "rabbitmq" }}
+    spec:
+      containers:
+      - name: rabbitmq
+        image: rabbitmq:3-management
+        ports:
+        - containerPort: {{ .Values.rabbitmq.deployment.amqp.containerPort | default 5672 }}
+        - containerPort: {{ .Values.rabbitmq.deployment.management.containerPort | default 15672 }}
+        env:
+        - name: RABBITMQ_DEFAULT_USER
+          value: "user"
+        - name: RABBITMQ_DEFAULT_PASS
+          value: "password"
+        volumeMounts:
+        - name: rabbitmq-data
+          mountPath: /var/lib/rabbitmq
+      volumes:
+      - name: rabbitmq-data
+        persistentVolumeClaim:
+          claimName: rabbitmq-data

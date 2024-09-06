@@ -1,0 +1,53 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Values.review.service.name | default "review-service" }}
+  namespace: {{ .Values.global.namespace | default "devops" }}
+spec:
+  ports:
+  - port: {{ .Values.review.service.port | default 8080 }}
+    targetPort: {{ .Values.review.service.port | default 8080 }}
+  selector:
+    app: {{ .Values.review.deployment.name | default "review" }}
+  type: ClusterIP
+
+---
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Values.review.deployment.name | default "review" }}
+  namespace: {{ .Values.global.namespace | default "devops" }}
+spec:
+  replicas: {{ .Values.review.deployment.replicas | default 1 }}
+  selector:
+    matchLabels:
+      app: {{ .Values.review.deployment.name | default "review" }}
+  template:
+    metadata:
+      labels:
+        app: {{ .Values.review.deployment.name | default "review" }}
+    spec:
+      containers:
+      - name: review-service
+        image: bukiteasy/review-service:0.0.1
+        imagePullPolicy: Always
+        ports:
+        - containerPort: {{ .Values.review.deployment.containerPort | default 8080 }}
+        env:
+        - name: ASPNETCORE_ENVIRONMENT
+          value: {{ .Values.global.netEnv | default "Development" }}
+        volumeMounts:
+            - name: config-volume
+              mountPath: /app/appsettings.Development.json
+              subPath: appsettings.Development.json
+            - name: elasticsearch-secrets
+              mountPath: /app/certs/apm-server.crt
+              subPath: apm-server.certificate
+      volumes:
+        - name: config-volume
+          configMap:
+            name: review-service-config
+        - name: elasticsearch-secrets
+          secret:
+            secretName: elasticsearch-secrets

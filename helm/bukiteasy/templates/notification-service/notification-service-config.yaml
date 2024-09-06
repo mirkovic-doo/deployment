@@ -1,0 +1,67 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: notification-service-config
+  namespace: {{ .Values.global.namespace | default "devops" }}
+data:
+  appsettings.Development.json: |
+    {
+      "ConnectionStrings": {
+        "DefaultConnection": "Host=postgres;Port=5432;Username=postgres;Password=postgres;Database=notification"
+      },
+      "Logging": {
+        "LogLevel": {
+          "Default": "Information",
+          "Microsoft.AspNetCore": "Warning"
+        }
+      },
+      "RabbitMQConfig": {
+        "HostName": "rabbitmq",
+        "UserName": "user",
+        "Password": "password",
+        "QueueName": "notification-queue"
+      },
+      "FirebaseAuthClientConfig": {
+        "ApiKey": "AIzaSyAcqTxexa9D0ehQwSiUAoFY5jvrlucOb94",
+        "AuthDomain": "buk-it-easy-dev.firebaseapp.com",
+        "ProjectId": "buk-it-easy-dev",
+        "StorageBucket": "buk-it-easy-dev.appspot.com",
+        "MessagingSenderId": "238386706283",
+        "AppId": "1:238386706283:web:0f36ec71441bf8b746be2e"
+      },
+      "ElasticApm": {
+        "ServiceName": "notification-service",
+        "SecretToken": "devops",
+        "ServerUrl": "https://apm-server:8200",
+        "Environment": "development",
+        "ServerCert": "/app/certs/apm-server.crt",
+        "TransactionSampleRate": 1.0,
+        "MetricsInterval": "15s",
+        "UseElasticApmMetrics": true
+      },
+      "Serilog": {
+        "Using": [
+          "Serilog.Sinks.Console"
+        ],
+        "MinimumLevel": {
+          "Default": "Information",
+          "Override": {
+            "Microsoft": "Information",
+            "System": "Warning"
+          }
+        },
+        "WriteTo": [
+          {
+            "Name": "Console",
+            "Args": {
+              "outputTemplate": "[{Timestamp:yyyy-MM-dd HH:mm:ss} {Level:u3}] {Message:lj}{NewLine}{Properties}{Exception}"
+            }
+          }
+        ],
+        "Enrich": [
+          "FromLogContext",
+          "WithMachineName",
+          "WithThreadId"
+        ]
+      }
+    }

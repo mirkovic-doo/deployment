@@ -1,0 +1,96 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Values.logstash.service.name | default "logstash" }}
+  namespace: {{ .Values.global.namespace | default "devops" }}
+spec:
+  selector:
+    app: {{ .Values.logstash.deployment.name | default "logstash" }}
+  ports:
+    - name: beats
+      protocol: TCP
+      port: {{ .Values.logstash.service.port.beats | default 5044 }}
+      targetPort: {{ .Values.logstash.service.port.beats | default 5044 }}
+    - name: http
+      protocol: TCP
+      port: {{ .Values.logstash.service.port.http | default 9600 }}
+      targetPort: {{ .Values.logstash.service.port.http | default 9600 }}
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Values.logstash.deployment.name | default "logstash" }}
+  namespace: {{ .Values.global.namespace | default "devops" }}
+spec:
+  replicas: {{ .Values.logstash.deployment.replicas | default 1 }}
+  selector:
+    matchLabels:
+      app: {{ .Values.logstash.deployment.name | default "logstash" }}
+  template:
+    metadata:
+      labels:
+        app: {{ .Values.logstash.deployment.name | default "logstash" }}
+    spec:
+      containers:
+        - name: logstash
+          image: docker.elastic.co/logstash/logstash:8.15.0
+          resources:
+            requests:
+              memory: "512Mi"
+              cpu: "500m"
+            limits:
+              memory: "1Gi"
+              cpu: "1000m" 
+          env:
+            - name: ELASTICSEARCH_HOST_PORT
+              value: "https://elasticsearch:9200"
+            - name: ELASTIC_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: elk-secrets
+                  key: ELASTIC_USERNAME
+            - name: ELASTIC_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: elk-secrets
+                  key: ELASTIC_PASSWORD
+          ports:
+            - containerPort: {{ .Values.logstash.deployment.containerPort.beats | default 5044 }}
+            - containerPort: {{ .Values.logstash.deployment.containerPort.http | default 9600 }}
+          volumeMounts:
+            - name: logstash-pipeline
+              mountPath: /usr/share/logstash/pipeline/main.conf
+              subPath: main.conf
+            - name: logstash-pipelines
+              mountPath: /usr/share/logstash/config/pipelines.yml
+              subPath: pipelines.yml
+            - name: logstash-config
+              mountPath: /usr/share/logstash/config/logstash.yml
+              subPath: logstash.yml
+            - name: logstash-secrets
+              mountPath: /certs/ca.crt
+              subPath: elastic.ca
+      volumes:
+        - name: logstash-pipeline
+          configMap:
+            name: elk-config
+            items:
+              - key: main.conf
+                path: main.conf
+        - name: logstash-pipelines
+          configMap:
+            name: elk-config
+            items:
+              - key: pipelines.yml
+                path: pipelines.yml
+        - name: logstash-config
+          configMap:
+            name: elk-config
+            items:
+              - key: logstash.yml
+                path: logstash.yml
+        - name: logstash-secrets
+          secret:
+            secretName: elasticsearch-secrets
+

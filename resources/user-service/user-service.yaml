@@ -1,0 +1,58 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: user-service
+  namespace: devops
+spec:
+  selector:
+    app: user
+  ports:
+  - protocol: TCP
+    port: 8080
+    targetPort: 8080
+  type: ClusterIP
+
+---
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: user
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: user
+  template:
+    metadata:
+      labels:
+        app: user
+    spec:
+      containers:
+        - name: user-service
+          image: bukiteasy/user-service:0.0.1
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 8080
+          env:
+            - name: ASPNETCORE_ENVIRONMENT
+              value: "Development"
+          volumeMounts:
+            - name: config-volume
+              mountPath: /app/appsettings.Development.json
+              subPath: appsettings.Development.json
+            - name: secrets-volume
+              mountPath: /app/secrets
+            - name: elasticsearch-secrets
+              mountPath: /app/certs/apm-server.crt
+              subPath: apm-server.certificate
+      volumes:
+        - name: config-volume
+          configMap:
+            name: user-service-config
+        - name: secrets-volume
+          secret:
+            secretName: user-service-secrets
+        - name: elasticsearch-secrets
+          secret:
+            secretName: elasticsearch-secrets

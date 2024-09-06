@@ -1,7 +1,7 @@
 global:
   namespace: devops
   netEnv: Development
-  nodeEnv: development
+  nodeEnv: production
   host: localhost
 
 accommodation:

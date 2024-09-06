@@ -4,7 +4,6 @@ metadata:
   name: kibana
   namespace: devops
 spec:
-  type: NodePort
   selector:
     app: kibana
   ports:

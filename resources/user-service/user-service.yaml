@@ -31,11 +31,12 @@ spec:
       containers:
         - name: user-service
           image: bukiteasy/user-service:0.0.1
+          imagePullPolicy: Always
           ports:
             - containerPort: 8080
           env:
             - name: ASPNETCORE_ENVIRONMENT
-              value: Development
+              value: "Development"
           volumeMounts:
             - name: config-volume
               mountPath: /app/appsettings.Development.json

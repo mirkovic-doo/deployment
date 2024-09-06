@@ -31,13 +31,13 @@ spec:
     spec:
       containers:
       - name: {{ .Values.client.deployment.name | default "client" }}
-        image: bukiteasy/client:v0.0.1
+        image: bukiteasy/client:0.0.1
         imagePullPolicy: Always
         ports:
         - containerPort: {{ .Values.client.deployment.containerPort | default 3009 }}
         env:
         - name: NODE_ENV
-          value: {{ .Values.global.nodeEnv | default "development" }}
+          value: {{ .Values.global.nodeEnv | default "production" }}
         - name: PUBLIC_USER_SERVICE_BASE_URL
           value: "/user-service"
         - name: PUBLIC_NOTIFICATION_SERVICE_BASE_URL
